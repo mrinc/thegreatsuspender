@@ -54,6 +54,11 @@
 			<label for="dontSuspendForms" class="cbLabel">Do not suspend tabs that contain unsaved form inputs</label>
 		</div>
 		<div class="formRow autoSuspendOption">
+			<input type="checkbox" id="dontSuspendAudio" class='option' />
+			<label for="dontSuspendAudio" class="cbLabel">Do not suspend tabs that are playing audio</label>
+		</div>
+		<div id="audibleOptionNote" class="gsNote">You must have chrome version 45 or higher to use this feature.</div>
+		<div class="formRow autoSuspendOption">
 			<input type="checkbox" id="onlineCheck" class='option' />
 			<label for="onlineCheck" class="cbLabel">Only auto-suspend if connected to the internet</label>
 		</div>
@@ -63,7 +68,7 @@
 		</div>
 		<div class="formRow">
 			<input type="checkbox" id="unsuspendOnFocus" class='option' />
-			<label for="unsuspendOnFocus" class="cbLabel">Automatically unsuspend when tab gains focus</label>
+			<label for="unsuspendOnFocus" class="cbLabel">Automatically unsuspend tab when it is viewed</label>
 		</div>
 		<div class="formRow">
 			<input type="checkbox" id="addContextMenu" class='option' />
@@ -79,6 +84,17 @@
 			</select>
 		</div>
 
+		<div class="formRow">
+			<label id="previewLbl" for="preview">Screen capturing:</label>
+			<br />
+			<select id="preview" class='option' style="margin-top: 8px;">
+				<option value="0">Disabled</option>
+				<option value="1">Capture visible screen only</option>
+				<option value="2">Capture entire page</option>
+			</select>
+		</div>
+		<div id="previewNote" class="gsNote">The screen capturing feature is experimental and can cause significant CPU usage.
+		<br />If you notice strange behaviour such as tabs taking a long time to suspend, or chrome crashing unexpectedly, try turning this feature off.</div>
 
 
 		<!-- <input type="checkbox" id="ignoreCache" class='option'></input>
@@ -103,25 +119,6 @@ You can also specify regular expressions by enclosing the text in forward slashe
 			</i>
 		</h2>
 		<textarea id="whitelist" class='option' rows="10" cols="50"></textarea>
-
-		<h2>Screen capture settings</h2>
-		<div class="formRow">
-			<input type="checkbox" id="preview" class='option' />
-			<label for="preview" class="cbLabel">
-				Enable screen capturing<br />
-				<span class="lesserText">Screen capturing will use more memory</span>
-			</label>
-		</div>
-
-		<div id="previewQualitySection" class="formRow">
-			<input type="checkbox" id="previewQuality" class='option' />
-			<label for="previewQuality" class="cbLabel">
-				Use high quality screen captures<br />
-				<span class="lesserText">High quality captures will use even more memory</span>
-			</label>
-		</div>
-		<div id="previewQualityNote" class="gsNote">Enabling screen capturing will add more memory usage to chrome and can cause significant CPU usage. Enabling high quality screen captures will increase the memory usage even further.<br />
-		Also, the screen capturing feature is quite experimental. If you notice strange behaviour such as tabs taking a long time to suspend, or chrome crashing unexpectedly, I suggest you try turning this feature off.</div>
 
 		<hr />
 

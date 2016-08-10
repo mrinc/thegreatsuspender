@@ -1,4 +1,4 @@
-/*global gsUtils, chrome, invert, populateOption, setPreviewQualityVisibility, setOnlineCheckVisibility, resetTabTimers */
+/*global gsUtils, chrome, invert, populateOption, setScreenCaptureNoteVisibility, setOnlineCheckVisibility, setAudibleNoteVisibility, resetTabTimers */
 
 (function () {
 
@@ -13,13 +13,13 @@
 
         gsUtils = chrome.extension.getBackgroundPage().gsUtils;
         elementPrefMap = {
-            'preview': gsUtils.SHOW_PREVIEW,
-            'previewQuality': gsUtils.PREVIEW_QUALITY,
+            'preview': gsUtils.SCREEN_CAPTURE,
             'onlineCheck': gsUtils.ONLINE_CHECK,
             'batteryCheck': gsUtils.BATTERY_CHECK,
             'unsuspendOnFocus': gsUtils.UNSUSPEND_ON_FOCUS,
             'dontSuspendPinned': gsUtils.IGNORE_PINNED,
             'dontSuspendForms': gsUtils.IGNORE_FORMS,
+            'dontSuspendAudio': gsUtils.IGNORE_AUDIO,
             'ignoreCache': gsUtils.IGNORE_CACHE,
             'addContextMenu': gsUtils.ADD_CONTEXT,
             'timeToSuspend': gsUtils.SUSPEND_TIME,
@@ -70,7 +70,8 @@
             populateOption(element, gsUtils.getOption(pref));
         }
 
-        setPreviewQualityVisibility(gsUtils.getOption(gsUtils.SHOW_PREVIEW));
+        setScreenCaptureNoteVisibility(gsUtils.getOption(gsUtils.SCREEN_CAPTURE) !== '0');
+        setAudibleNoteVisibility(gsUtils.getChromeVersion() < 45 && gsUtils.getOption(gsUtils.IGNORE_AUDIO));
         setAutoSuspendOptionsVisibility(gsUtils.getOption(gsUtils.SUSPEND_TIME) > 0);
     }
 
@@ -99,13 +100,19 @@
         }
     }
 
-    function setPreviewQualityVisibility(visible) {
+    function setAudibleNoteVisibility(visible) {
         if (visible) {
-            document.getElementById('previewQualitySection').style.display = 'block';
-            document.getElementById('previewQualityNote').style.display = 'block';
+            document.getElementById('audibleOptionNote').style.display = 'block';
         } else {
-            document.getElementById('previewQualitySection').style.display = 'none';
-            document.getElementById('previewQualityNote').style.display = 'none';
+            document.getElementById('audibleOptionNote').style.display = 'none';
+        }
+    }
+
+    function setScreenCaptureNoteVisibility(visible) {
+        if (visible) {
+            document.getElementById('previewNote').style.display = 'block';
+        } else {
+            document.getElementById('previewNote').style.display = 'none';
         }
     }
 
@@ -122,11 +129,16 @@
     function handleChange(element) {
         return function () {
             var pref = elementPrefMap[element.id],
-                interval;
+                interval,
+                chromeVersion;
 
             //add specific screen element listeners
-            if (pref === gsUtils.SHOW_PREVIEW) {
-                setPreviewQualityVisibility(getOptionValue(element));
+            if (pref === gsUtils.SCREEN_CAPTURE) {
+                setScreenCaptureNoteVisibility(getOptionValue(element) !== '0');
+
+            } else if (pref === gsUtils.IGNORE_AUDIO) {
+                chromeVersion = gsUtils.getChromeVersion();
+                setAudibleNoteVisibility(chromeVersion < 45 && getOptionValue(element));
 
             } else if (pref === gsUtils.SUSPEND_TIME) {
                 interval = getOptionValue(element);
@@ -156,23 +168,19 @@
         }
 
         //if context menu has been disabled then remove from chrome
-        if (pref === gsUtils.ADD_CONTEXT && oldValue !== newValue) {
-            if (newValue === true) {
-                chrome.extension.getBackgroundPage().tgs.buildContextMenu();
-            } else {
-                chrome.extension.getBackgroundPage().tgs.removeContextMenu();
-            }
+        if (pref === gsUtils.ADD_CONTEXT) {
+            chrome.extension.getBackgroundPage().tgs.buildContextMenu(newValue);
         }
     }
-    
-    function CloseSettings() {
-        // Only close the window if we were opened in a new tab.
-        // Else, go back to the page we were on.
-        // This is to fix closing tabs if they were opened from the context menu.
-        if (document.referrer == "") {
-            window.close()
+
+    function closeSettings() {
+        //only close the window if we were opened in a new tab.
+        //else, go back to the page we were on.
+        //this is to fix closing tabs if they were opened from the context menu.
+        if (document.referrer === "") {
+            window.close();
         } else {
-            history.back()
+            history.back();
         }
     }
 
@@ -199,10 +207,10 @@
                 for (i = 0; i < optionEls.length; i++) {
                     saveChange(optionEls[i]);
                 }
-                CloseSettings();
+                closeSettings();
             };
             cancelEl.onclick = function (e) {
-                CloseSettings();
+                closeSettings();
             };
         }
     }, 50);
